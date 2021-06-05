@@ -6,7 +6,7 @@ import data from './../../src/mock/data'
 import { connect } from 'react-redux'
 import {useEffect, useState} from 'react'
 import * as actionType from '../store/reducer/actions'
-const axios = require('axios');
+import client from '../services/axios'
 
 // const instance = axios.create({
 //     baseURL: 'http://localhost:3000',
@@ -17,20 +17,24 @@ const axios = require('axios');
 
 const ProdukList = (props) => {
    
-    const {productList, categoryList, totalpage, show, totaldata, page,list, getProducts, changePageRedux} = props
+    const {productList, categoryList, show, totaldata,list, getProducts, changePageRedux} = props
     const history= useHistory()
     let [productEx, setProductEx] = useState([])
+    let [limit, setLimit] = useState(1)
+    let [page, setPage] = useState(1)
+    let [totalpage, setTotalPage] = useState(1)
 
 
     useEffect(() => {
-        axios.defaults.baseURL = 'http://localhost:3000';
         // Make a request for a user with a given ID
-        axios.get('/products')
+        client.get(`/api/v1/products?limit=${limit}&page=${page}`)
         .then(function (response) {
                     // handle success
-                    console.log(response.data.data);
-                        setProductEx(prevState => response.data.data)
+                    console.log(response.data);
+                        setProductEx(prevState => response.data.products)
+                        setTotalPage(prevState => response.data.pageCount)
                     })
+                             
         .catch(function (error) {
                 // handle error
                 console.log(error);
@@ -40,22 +44,45 @@ const ProdukList = (props) => {
 
         // show berapa
         // page berapa
-        const data = {
-            show: show,
-            page: page
-        }
-        console.log(`${show} & ${page}`)
-         getProducts(data)
+       
      }, [])
+
+     useEffect(() => {
+        //  setVisibleLoading(prevState => true)
+        
+        // Make a request for a user with a given ID
+        client.get(`/api/v1/products?limit=${limit}&page=${page}`)
+        .then(function (response) {
+                    // handle success
+                    console.log(response.data);
+                        setProductEx(prevState => response.data.products)
+                        setTotalPage(prevState => response.data.pageCount)
+                    })
+                    // setVisibleLoading(prevState => false)              
+        .catch(function (error) {
+                // handle error
+                console.log(error);
+                alert('Data tidak Ditemukan')
+                // setVisibleLoading(prevState => false)        
+        })
+
+
+        // show berapa
+        // page berapa
+       
+     }, [page])
+
 
      const changePage = (event) => {
          console.log(event.target.innerHTML)
          console.log(typeof event.target.innerHTML)
-         const data = {
-            show: show,
-            page: parseInt(event.target.innerHTML)
-        }
-         changePageRedux(data)
+
+         setPage(prevState => parseInt(event.target.innerHTML))
+        //  const data = {
+        //     show: show,
+        //     page: parseInt(event.target.innerHTML)
+        // }
+        //  changePageRedux(data)
      }
 
     const renderPage = () => {
@@ -115,10 +142,10 @@ const ProdukList = (props) => {
                 <div className='product-list'>
                    
                    {productEx.map((value,index) => {
-                      return <div onClick={() => history.push (`/product/${value.nama}`)} className='card' key={index}>
+                      return <div onClick={() => history.push (`/product/${value.id}`)} className='card' key={index}>
                           <div  className='isiCard'>
-                           <p>{value.nama}</p>
-                           <p>{value.category}</p>
+                           <p>{value.nama_produk}</p>
+                           <p>{value.price}</p>
                           </div>
                           
 
@@ -128,7 +155,7 @@ const ProdukList = (props) => {
 
                </div>
 
-                <div className='product-list'>
+                {/* <div className='product-list'>
                    
                     {list.map((value,index) => {
                        return <div onClick={() => history.push (`/product/${value.id}`)} className='card' key={index}>
@@ -142,7 +169,7 @@ const ProdukList = (props) => {
                     } )}
                     
 
-                </div>
+                </div> */}
                 <div className='filter-list'>
                     <ul>
                         <li>ALL</li>
